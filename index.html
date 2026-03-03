@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithms Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Sorting Algorithms Visualizer</h1>
+        <p>Visualize sorting algorithms, including a live heap-tree view.</p>
+    </header>
+
+    <main>
+        <section class="controls-section">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="algorithm">Select Algorithm:</label>
+                    <select id="algorithm">
+                        <option value="quicksort">QuickSort</option>
+                        <option value="mergesort">MergeSort</option>
+                        <option value="heapsort">HeapSort</option>
+                        <option value="selectionsort">SelectionSort</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="data-type">Select Data Type:</label>
+                    <select id="data-type">
+                        <option value="int">Integer</option>
+                        <option value="float">Float</option>
+                        <option value="negative">Negative Numbers</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="size">Array Size:</label>
+                    <input type="number" id="size" min="5" max="500" value="40">
+                </div>
+
+                <div class="control-group">
+                    <label for="speed">Animation Speed:</label>
+                    <input type="range" id="speed" min="1" max="100" value="55">
+                    <small id="speed-label">Speed: 55</small>
+                </div>
+
+                <div class="control-group control-group-wide">
+                    <label for="custom-array">Custom Array (comma or space separated):</label>
+                    <textarea id="custom-array" rows="3" placeholder="Example: 9, 4, -2, 7, 1"></textarea>
+                    <small class="hint">Use integers or decimals. This will replace generated data.</small>
+                </div>
+
+                <div class="button-group">
+                    <button id="generate-data" class="btn">Generate Data</button>
+                    <button id="use-custom-data" class="btn">Use Custom Array</button>
+                    <button id="start-sort" class="btn primary">Start Sorting</button>
+                    <button id="save-results" class="btn">Save Results</button>
+                </div>
+
+                <p id="input-status" class="status" aria-live="polite"></p>
+            </div>
+        </section>
+
+        <section class="visualization-section">
+            <div id="visualization-grid" class="visualization-grid">
+                <div class="visualization">
+                    <h2>Array Bars</h2>
+                    <canvas id="sorting-canvas" width="1000" height="420"></canvas>
+                </div>
+
+                <div id="heap-tree-panel" class="heap-tree-panel hidden">
+                    <h2 id="aux-visual-title">Algorithm View</h2>
+                    <canvas id="heap-canvas" width="1000" height="420"></canvas>
+                </div>
+            </div>
+
+            <div id="numbers-container" class="numbers-container"></div>
+        </section>
+
+        <section class="charts-section">
+            <div class="charts">
+                <canvas id="time-chart"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

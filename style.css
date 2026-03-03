@@ -1,0 +1,259 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #f4f6f9;
+    --panel: #ffffff;
+    --text: #24303f;
+    --muted: #637287;
+    --line: #dbe2ea;
+    --blue: #2f80ed;
+    --blue-dark: #1f6ccf;
+    --green: #27ae60;
+    --green-dark: #1f8f4d;
+    --orange: #f39c12;
+    --danger: #e74c3c;
+    --shadow: 0 8px 24px rgba(22, 34, 51, 0.08);
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: radial-gradient(circle at top left, #eef4ff 0%, var(--bg) 60%);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+header h1 {
+    font-size: 2.3rem;
+    color: #1f2a38;
+}
+
+header p {
+    color: var(--muted);
+    margin-top: 6px;
+}
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.controls-section,
+.visualization-section,
+.charts-section {
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 190px;
+}
+
+.control-group-wide {
+    flex: 1 1 100%;
+}
+
+.control-group label {
+    font-size: 0.9rem;
+    color: #32465a;
+    font-weight: 500;
+}
+
+.control-group select,
+.control-group input,
+.control-group textarea {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 0.96rem;
+    color: var(--text);
+    background: #fff;
+}
+
+.control-group textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 84px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.hint {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+#speed-label {
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background: var(--blue);
+    color: #fff;
+    transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.btn:hover {
+    background: var(--blue-dark);
+    transform: translateY(-1px);
+}
+
+.btn.primary {
+    background: var(--green);
+}
+
+.btn.primary:hover {
+    background: var(--green-dark);
+}
+
+.btn:disabled {
+    background: #a3afbf;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.status {
+    flex: 1 1 100%;
+    margin-top: 6px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    min-height: 1.2em;
+}
+
+.status.error {
+    color: var(--danger);
+}
+
+.status.success {
+    color: var(--green-dark);
+}
+
+.visualization-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.visualization-grid.with-heap {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.visualization,
+.heap-tree-panel {
+    min-width: 0;
+}
+
+.visualization h2,
+.heap-tree-panel h2 {
+    margin-bottom: 10px;
+    font-size: 1.15rem;
+    color: #2a3b4e;
+}
+
+.visualization canvas,
+.heap-tree-panel canvas,
+.charts canvas {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.visualization canvas,
+.heap-tree-panel canvas {
+    height: 420px;
+}
+
+.charts {
+    height: 420px;
+}
+
+.numbers-container {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fbfdff;
+}
+
+.num-chip {
+    border: 1px solid #d6e2f0;
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-size: 0.8rem;
+    color: #2c3f55;
+    background: #f3f8ff;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 12px;
+    }
+
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    .controls {
+        gap: 12px;
+    }
+
+    .control-group {
+        min-width: 100%;
+    }
+
+    .button-group {
+        width: 100%;
+    }
+
+    .visualization-grid.with-heap {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .btn {
+        flex: 1 1 100%;
+    }
+}
