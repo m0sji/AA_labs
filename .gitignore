@@ -3,6 +3,11 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# JavaScript / Vite
+node_modules/
+npm-debug.log*
+vite-dev.log
+
 # C extensions
 *.so
 
