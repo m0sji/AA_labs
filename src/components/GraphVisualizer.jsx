@@ -23,7 +23,7 @@ function getFallbackPosition(index, totalNodes) {
   };
 }
 
-function buildElements(graph, useSavedPositions) {
+function buildElements(graph, useSavedPositions, showEdgeWeights) {
   const nodes = graph.nodes.map((node, index) => ({
     data: {
       id: getNodeId(node),
@@ -39,7 +39,7 @@ function buildElements(graph, useSavedPositions) {
       id: edge.id,
       source: edge.source,
       target: edge.target,
-      label: String(edge.weight),
+      label: showEdgeWeights ? String(edge.weight) : '',
       weight: edge.weight,
     },
   }));
@@ -49,6 +49,7 @@ function buildElements(graph, useSavedPositions) {
 
 function GraphVisualizer({
   graph,
+  showEdgeWeights = true,
   currentNode = null,
   visitedNodes = [],
   currentEdge = null,
@@ -75,7 +76,7 @@ function GraphVisualizer({
     // Cytoscape owns the graph canvas. React only gives it a container element.
     const cy = cytoscape({
       container: containerRef.current,
-      elements: buildElements(graph, useSavedPositions),
+      elements: buildElements(graph, useSavedPositions, showEdgeWeights),
       layout: {
         name: useSavedPositions ? 'preset' : 'circle',
         padding: 40,
@@ -201,7 +202,7 @@ function GraphVisualizer({
       cy.destroy();
       cytoscapeRef.current = null;
     };
-  }, [graph]);
+  }, [graph, showEdgeWeights]);
 
   useEffect(() => {
     const cy = cytoscapeRef.current;

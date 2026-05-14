@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import AlgorithmControls from './components/AlgorithmControls.jsx';
 import DistanceDisplay from './components/DistanceDisplay.jsx';
 import DistanceMatrix from './components/DistanceMatrix.jsx';
@@ -160,6 +160,20 @@ function normalizeEdges(edges, validNodeIds = null) {
     });
 }
 
+function getEffectiveGraph(graph, graphType) {
+  if (graphType === 'weighted') {
+    return graph;
+  }
+
+  return {
+    nodes: graph.nodes,
+    edges: graph.edges.map((edge) => ({
+      ...edge,
+      weight: 1,
+    })),
+  };
+}
+
 function layoutNodes(nodes) {
   const count = Math.max(nodes.length, 1);
   const centerX = 360;
@@ -216,7 +230,13 @@ function shuffleItems(items) {
   return shuffled;
 }
 
-function parseRandomSettings({ edgeCount, minimumWeight, maximumWeight, requireEdgeCount }) {
+function parseRandomSettings({
+  edgeCount,
+  minimumWeight,
+  maximumWeight,
+  requireEdgeCount,
+  requireWeights,
+}) {
   const parsedEdgeCount = Number(edgeCount);
   const parsedMinimum = Number(minimumWeight);
   const parsedMaximum = Number(maximumWeight);
@@ -227,6 +247,15 @@ function parseRandomSettings({ edgeCount, minimumWeight, maximumWeight, requireE
 
   if (requireEdgeCount && parsedEdgeCount < 0) {
     return { ok: false, text: 'Number of random edges cannot be negative.' };
+  }
+
+  if (!requireWeights) {
+    return {
+      ok: true,
+      edgeCount: parsedEdgeCount,
+      minimumWeight: 1,
+      maximumWeight: 1,
+    };
   }
 
   if (!String(minimumWeight).trim() || !String(maximumWeight).trim()) {
@@ -256,12 +285,16 @@ function parseRandomSettings({ edgeCount, minimumWeight, maximumWeight, requireE
 function App() {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(algorithms[0]);
   const [graph, setGraph] = useState(() => cloneGraph(sampleGraph));
+  const [graphType, setGraphType] = useState('weighted');
   const [startNode, setStartNode] = useState(sampleGraph.nodes[0] ? getNodeId(sampleGraph.nodes[0]) : '');
   const [steps, setSteps] = useState([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
   const [currentStep, setCurrentStep] = useState(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [autoPlayDelay, setAutoPlayDelay] = useState(1000);
   const [statusMessage, setStatusMessage] = useState(null);
+  const effectiveGraph = useMemo(() => getEffectiveGraph(graph, graphType), [graph, graphType]);
+  const isWeightedGraph = graphType === 'weighted';
   const hasStarted = currentStepIndex >= 0;
   const isLastStep = hasStarted && currentStepIndex === steps.length - 1;
   const isFloydWarshall = selectedAlgorithm.id === 'floyd-warshall';
@@ -286,12 +319,12 @@ function App() {
       if (nextStepIndex === steps.length - 1) {
         setIsAutoPlaying(false);
       }
-    }, 1000);
+    }, autoPlayDelay);
 
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [currentStepIndex, hasStarted, isAutoPlaying, isLastStep, steps]);
+  }, [autoPlayDelay, currentStepIndex, hasStarted, isAutoPlaying, isLastStep, steps]);
 
   useEffect(() => {
     const startNodeExists = graph.nodes.some((node) => getNodeId(node) === startNode);
@@ -315,6 +348,16 @@ function App() {
     setStatusMessage(null);
   }
 
+  function handleGraphTypeChange(nextGraphType) {
+    if (nextGraphType === graphType) {
+      return;
+    }
+
+    setGraphType(nextGraphType);
+    resetVisualization();
+    setStatusMessage(null);
+  }
+
   function startVisualization() {
     if (graph.nodes.length === 0) {
       setStatusMessage({ type: 'error', text: 'Add at least one node before starting an algorithm.' });
@@ -326,7 +369,7 @@ function App() {
       return;
     }
 
-    if (selectedAlgorithm.requiresNonNegativeWeights && hasNegativeWeights(graph)) {
+    if (selectedAlgorithm.requiresNonNegativeWeights && hasNegativeWeights(effectiveGraph)) {
       setStatusMessage({
         type: 'error',
         text: `${selectedAlgorithm.name} requires non-negative edge weights in this visualizer.`,
@@ -336,7 +379,7 @@ function App() {
 
     // Each algorithm returns an ordered list of steps with explanation and highlight data.
     const generatedSteps = selectedAlgorithm.run(
-      graph,
+      effectiveGraph,
       selectedAlgorithm.usesStartNode ? startNode : undefined,
     );
 
@@ -417,7 +460,7 @@ function App() {
     const normalizedSource = normalizeNodeLabel(source);
     const normalizedTarget = normalizeNodeLabel(target);
     const trimmedWeight = String(weightValue).trim();
-    const parsedWeight = Number(trimmedWeight);
+    const parsedWeight = isWeightedGraph ? Number(trimmedWeight) : 1;
 
     if (!normalizedSource || !normalizedTarget) {
       return { ok: false, text: 'Choose both a source node and a target node.' };
@@ -435,15 +478,15 @@ function App() {
       return { ok: false, text: `Target node ${normalizedTarget} does not exist.` };
     }
 
-    if (!trimmedWeight) {
+    if (isWeightedGraph && !trimmedWeight) {
       return { ok: false, text: 'Enter a weight for the edge.' };
     }
 
-    if (!Number.isFinite(parsedWeight)) {
+    if (isWeightedGraph && !Number.isFinite(parsedWeight)) {
       return { ok: false, text: 'Edge weight must be a valid number.' };
     }
 
-    if (parsedWeight < 0) {
+    if (isWeightedGraph && parsedWeight < 0) {
       return {
         ok: false,
         text: 'Use non-negative weights so Dijkstra, Prim, and Kruskal remain valid.',
@@ -474,7 +517,12 @@ function App() {
       ],
     });
 
-    return { ok: true, text: `Edge ${edgeId} added with weight ${parsedWeight}.` };
+    return {
+      ok: true,
+      text: isWeightedGraph
+        ? `Edge ${edgeId} added with weight ${parsedWeight}.`
+        : `Edge ${edgeId} added.`,
+    };
   }
 
   function removeNode(nodeId) {
@@ -531,6 +579,7 @@ function App() {
       minimumWeight,
       maximumWeight,
       requireEdgeCount: true,
+      requireWeights: isWeightedGraph,
     });
 
     if (!parsed.ok) {
@@ -562,7 +611,9 @@ function App() {
       .slice(0, targetCount)
       .map((edge) => ({
         ...edge,
-        weight: getRandomInteger(parsed.minimumWeight, parsed.maximumWeight),
+        weight: isWeightedGraph
+          ? getRandomInteger(parsed.minimumWeight, parsed.maximumWeight)
+          : 1,
       }));
     const nextEdges = keepExistingEdges ? [...normalizedExistingEdges, ...newEdges] : newEdges;
 
@@ -600,6 +651,7 @@ function App() {
       minimumWeight,
       maximumWeight,
       requireEdgeCount: false,
+      requireWeights: isWeightedGraph,
     });
 
     if (!parsed.ok) {
@@ -608,7 +660,9 @@ function App() {
 
     const completeEdges = getAllPossibleEdges(graph.nodes).map((edge) => ({
       ...edge,
-      weight: getRandomInteger(parsed.minimumWeight, parsed.maximumWeight),
+      weight: isWeightedGraph
+        ? getRandomInteger(parsed.minimumWeight, parsed.maximumWeight)
+        : 1,
     }));
 
     applyGraphUpdate({
@@ -675,7 +729,7 @@ function App() {
             <h1>Graph Algorithms Visualizer</h1>
             <p>
               Explore traversal, shortest-path, and minimum-spanning-tree algorithms on the
-              current weighted graph.
+              current {isWeightedGraph ? 'weighted' : 'unweighted'} graph.
             </p>
             <div className="selected-summary">
               <span>Selected algorithm</span>
@@ -685,6 +739,28 @@ function App() {
           </div>
 
           <div className="control-panel">
+            <div className="graph-type-control" aria-label="Graph type">
+              <span>Graph type</span>
+              <div className="segmented-control">
+                <button
+                  aria-pressed={isWeightedGraph}
+                  className={isWeightedGraph ? 'active' : ''}
+                  onClick={() => handleGraphTypeChange('weighted')}
+                  type="button"
+                >
+                  Weighted
+                </button>
+                <button
+                  aria-pressed={!isWeightedGraph}
+                  className={!isWeightedGraph ? 'active' : ''}
+                  onClick={() => handleGraphTypeChange('unweighted')}
+                  type="button"
+                >
+                  Unweighted
+                </button>
+              </div>
+            </div>
+
             {selectedAlgorithm.usesStartNode && (
               <label className="start-node-control" htmlFor="start-node">
                 Start node
@@ -710,6 +786,8 @@ function App() {
               hasStarted={hasStarted}
               isAutoPlaying={isAutoPlaying}
               isLastStep={isLastStep}
+              autoPlayDelay={autoPlayDelay}
+              onAutoPlayDelayChange={setAutoPlayDelay}
               onNextStep={showNextStep}
               onReset={resetVisualization}
               onStart={startVisualization}
@@ -728,7 +806,7 @@ function App() {
               <div className="panel-heading">
                 <div className="panel-title-block">
                   <p className="eyebrow">Graph workspace</p>
-                  <h3>Current weighted graph</h3>
+                  <h3>Current {isWeightedGraph ? 'weighted' : 'unweighted'} graph</h3>
                   <p>Create a graph below, then run an algorithm step by step.</p>
                 </div>
                 <span className="step-count">
@@ -764,7 +842,8 @@ function App() {
               </div>
 
               <GraphVisualizer
-                graph={graph}
+                graph={effectiveGraph}
+                showEdgeWeights={isWeightedGraph}
                 currentNode={currentStep?.currentNode ?? null}
                 visitedNodes={currentStep?.visitedNodes ?? []}
                 currentEdge={currentStep?.currentEdge ?? null}
@@ -776,6 +855,7 @@ function App() {
 
             <GraphEditor
               graph={graph}
+              isWeightedGraph={isWeightedGraph}
               onAddEdge={addEdge}
               onAddNode={addNode}
               onClearGraph={clearGraph}
@@ -797,7 +877,7 @@ function App() {
             />
             <DistanceDisplay distances={currentStep?.distances} startNode={startNode} />
             <DistanceMatrix
-              graph={graph}
+              graph={effectiveGraph}
               matrix={isFloydWarshall ? currentStep?.matrix : null}
               updatedCell={isFloydWarshall ? currentStep?.updatedCell : null}
               eyebrow={isFloydWarshall ? 'All-pairs shortest paths' : 'Reference'}

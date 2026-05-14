@@ -18,6 +18,7 @@ function getMaximumUndirectedEdges(nodeCount) {
 
 function GraphEditor({
   graph,
+  isWeightedGraph,
   onAddEdge,
   onAddNode,
   onClearGraph,
@@ -122,7 +123,10 @@ function GraphEditor({
         <div>
           <p className="eyebrow">Graph editor</p>
           <h3>Create your own graph</h3>
-          <p>Add nodes and weighted undirected edges, then run any algorithm.</p>
+          <p>
+            Add nodes and {isWeightedGraph ? 'weighted' : 'unweighted'} undirected edges,
+            then run any algorithm.
+          </p>
         </div>
         <button className="secondary-action" onClick={handleLoadDefaultGraph} type="button">
           Load Default
@@ -151,8 +155,8 @@ function GraphEditor({
         </form>
 
         <form className="editor-form" onSubmit={handleAddEdge}>
-          <label>Add weighted edge</label>
-          <div className="edge-form-grid">
+          <label>Add {isWeightedGraph ? 'weighted' : 'unweighted'} edge</label>
+          <div className={isWeightedGraph ? 'edge-form-grid' : 'edge-form-grid unweighted'}>
             <input
               aria-label="Source node"
               list="graph-node-options"
@@ -176,18 +180,23 @@ function GraphEditor({
                 </option>
               ))}
             </datalist>
-            <input
-              aria-label="Edge weight"
-              min="0"
-              onChange={(event) => setWeight(event.target.value)}
-              placeholder="Weight"
-              step="1"
-              type="number"
-              value={weight}
-            />
+            {isWeightedGraph && (
+              <input
+                aria-label="Edge weight"
+                min="0"
+                onChange={(event) => setWeight(event.target.value)}
+                placeholder="Weight"
+                step="1"
+                type="number"
+                value={weight}
+              />
+            )}
             <button type="submit">Add Edge</button>
           </div>
-          <p className="field-help">Edges are undirected, so A-B and B-A count as the same edge.</p>
+          <p className="field-help">
+            Edges are undirected, so A-B and B-A count as the same edge.
+            {!isWeightedGraph && ' Unweighted edges count as 1 in shortest-path and spanning-tree algorithms.'}
+          </p>
         </form>
       </div>
 
@@ -213,26 +222,30 @@ function GraphEditor({
               value={randomEdgeCount}
             />
           </label>
-          <label>
-            Min weight
-            <input
-              min="0"
-              onChange={(event) => setMinimumWeight(event.target.value)}
-              step="1"
-              type="number"
-              value={minimumWeight}
-            />
-          </label>
-          <label>
-            Max weight
-            <input
-              min="0"
-              onChange={(event) => setMaximumWeight(event.target.value)}
-              step="1"
-              type="number"
-              value={maximumWeight}
-            />
-          </label>
+          {isWeightedGraph && (
+            <>
+              <label>
+                Min weight
+                <input
+                  min="0"
+                  onChange={(event) => setMinimumWeight(event.target.value)}
+                  step="1"
+                  type="number"
+                  value={minimumWeight}
+                />
+              </label>
+              <label>
+                Max weight
+                <input
+                  min="0"
+                  onChange={(event) => setMaximumWeight(event.target.value)}
+                  step="1"
+                  type="number"
+                  value={maximumWeight}
+                />
+              </label>
+            </>
+          )}
           <label className="checkbox-control">
             <input
               checked={keepExistingEdges}
@@ -268,6 +281,7 @@ function GraphEditor({
         </div>
         <p className="field-help">
           Random generation uses only existing nodes, avoids self-loops, and treats A-B and B-A as one edge.
+          {!isWeightedGraph && ' Generated unweighted edges use weight 1 internally.'}
         </p>
       </div>
 
@@ -299,7 +313,13 @@ function GraphEditor({
               {graph.edges.map((edge) => (
                 <div className="edge-row" key={edge.id}>
                   <span>
-                    {edge.id} <strong>weight {edge.weight}</strong>
+                    {edge.id}
+                    {isWeightedGraph && (
+                      <>
+                        {' '}
+                        <strong>weight {edge.weight}</strong>
+                      </>
+                    )}
                   </span>
                   <button onClick={() => handleRemoveEdge(edge.id)} type="button">
                     Remove

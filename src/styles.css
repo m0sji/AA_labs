@@ -196,6 +196,7 @@ button {
 }
 
 .control-group {
+  align-items: end;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -209,7 +210,9 @@ button {
   min-width: 280px;
 }
 
-.start-node-control {
+.start-node-control,
+.graph-type-control,
+.speed-control {
   color: #334155;
   display: grid;
   font-size: 0.84rem;
@@ -220,7 +223,12 @@ button {
   text-transform: uppercase;
 }
 
+.graph-type-control {
+  justify-items: end;
+}
+
 .start-node-control select,
+.speed-control select,
 .editor-form input,
 .editor-form select,
 .random-generator input {
@@ -231,6 +239,29 @@ button {
   font: inherit;
   min-height: 40px;
   padding: 0 10px;
+}
+
+.segmented-control {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  display: inline-flex;
+  padding: 3px;
+}
+
+.segmented-control button {
+  background: transparent;
+  border-radius: 6px;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 850;
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.segmented-control button.active {
+  background: #2563eb;
+  color: #ffffff;
 }
 
 .control-group button {
@@ -461,6 +492,10 @@ button {
   display: grid;
   gap: 8px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.edge-form-grid.unweighted {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
 }
 
 .editor-form button,
@@ -813,6 +848,10 @@ button {
     width: 100%;
   }
 
+  .graph-type-control {
+    justify-items: start;
+  }
+
   .content-grid {
     grid-template-columns: 1fr;
   }
@@ -849,6 +888,14 @@ button {
 
   .edge-form-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .edge-form-grid.unweighted {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .edge-form-grid.unweighted button {
+    grid-column: 1 / -1;
   }
 
   .graph-panel {
